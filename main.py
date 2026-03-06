@@ -1,22 +1,22 @@
 from classes.simulation import Simulation
-from classes.event_handlers import EventHandlers
 from classes.generate_random import Distributions
+from classes.event_handlers import EventHandlers
 
 
 def main():
 
-    # create handler and distribution objects first
+    # create objects
     handlers = EventHandlers(None)
     distributions = Distributions(None)
 
-    # create simulation object
+    # create simulation
     sim = Simulation(handlers, distributions)
 
-    # connect handlers and distributions back to simulation
+    # link objects back to simulation
     handlers.simulation = sim
     distributions.simulation = sim
 
-    # run the simulation
+    # start simulation
     sim.run()
 
 

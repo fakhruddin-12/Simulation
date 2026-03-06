@@ -1,8 +1,10 @@
-from classes import generate_random as gr
-
 class Simulation:
 
-    def __init__(self):
+    def __init__(self, handlers, distributions):
+
+        # connect handlers and distributions
+        self.handlers = handlers
+        self.distributions = distributions
 
         # Current simulation clock
         self.current_time = 0
@@ -31,14 +33,3 @@ class Simulation:
 
         # Driver availability tracking
         self.driver_offline_flags = {}
-
-        # Random Distributions
-        self.distributions = {
-            "driver-arrival": gr.driver_arrival,
-            "rider-arrival": gr.rider_arrival,
-            "patience": gr.rider_patience,
-            "driver-availability": gr.driver_availability
-        }
-
-        # Event handlers dictionary
-        self.event_handlers = {}

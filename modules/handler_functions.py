@@ -1,5 +1,4 @@
 from classes.simulation import Simulation
-from classes import generate_random as gr
 import math
 
 # To compute Euclidean distance between two locations
@@ -43,7 +42,7 @@ def execute_driver_arrival(sim: Simulation):
     sim.add_event(offline_time,"driver_offline",{"driver": driver_id})
 
     # generate driver location using module
-    location = gr.random_location()
+    location = sim.distributions.random_location()
     
     sim.driver_locations[driver_id] = location
 
@@ -81,7 +80,7 @@ def execute_rider_arrival(sim: Simulation):
     rider_id = sim.rider_count
 
     # Generate rider pickup location
-    location = gr.random_location()
+    location = sim.distributions.random_location()
     sim.rider_locations[rider_id] = location
 
     # If a driver is available, match immediately
@@ -94,7 +93,7 @@ def execute_rider_arrival(sim: Simulation):
         # generate pickup travel time
         driver_location = sim.driver_locations[driver]
         rider_location = sim.rider_locations[rider_id]
-        pickup_time = sim.current_time + gr.travel_time(driver_location, rider_location)
+        pickup_time = sim.current_time + sim.distributions.travel_time(driver_location, rider_location)
 
         # Schedule pickup completion event
         sim.add_event(
@@ -142,11 +141,11 @@ def execute_pickup_complete(sim: Simulation, event_data):
     rider = event_data["rider"]
 
     origin = sim.rider_locations[rider]
-    destination = gr.random_location()
+    destination = sim.distributions.random_location()
 
     # Generate trip duration and find dropoff time
     sim.rider_destinations[rider] = destination       # store destination
-    trip_time = gr.travel_time(origin, destination)
+    trip_time = sim.distributions.travel_time(origin, destination)
     
     dropoff_time = sim.current_time + trip_time
     
@@ -182,7 +181,7 @@ def execute_dropoff_complete(sim: Simulation, event_data):
         driver_location = sim.driver_locations[driver]
         rider_location = sim.rider_locations[next_rider]
 
-        pickup_time = sim.current_time + gr.travel_time(driver_location, rider_location)
+        pickup_time = sim.current_time + sim.distributions.travel_time(driver_location, rider_location)
 
         sim.add_event(
             pickup_time,
