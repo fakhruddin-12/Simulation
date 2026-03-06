@@ -1,19 +1,16 @@
 import random
 import math
 
-
 class Distributions:
 
     def __init__(self, simulation):
         self.simulation = simulation
-	
-	# setting model parameters
+		# setting model parameters
 		self.rider_arrival_rate = 30
-        self.driver_arrival_rate = 3
-        self.patience_rate = 5
-
-        self.driver_availability_min = 5
-        self.driver_availability_max = 8
+    	self.driver_arrival_rate = 3
+    	self.patience_rate = 5
+    	self.driver_availability_min = 5
+    	self.driver_availability_max = 8
 
     # Rider arrival process
     def rider_arrival(self):
