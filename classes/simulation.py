@@ -16,6 +16,10 @@ class Simulation:
         self.driver_count = 0
         self.rider_count = 0
 
+        #last added
+        self.drivers = {}
+        self.riders = {}
+
         # Lists to store system state
         self.idle_drivers = []
         self.waiting_riders = []
