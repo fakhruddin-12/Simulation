@@ -16,18 +16,13 @@ class Simulation:
         self.driver_count = 0
         self.rider_count = 0
 
-        #last added
+        # store driver and rider objects
         self.drivers = {}
         self.riders = {}
 
         # Lists to store system state
         self.idle_drivers = []
         self.waiting_riders = []
-
-        # driver and rider locations
-        self.driver_locations = {}
-        self.rider_locations = {}
-        self.rider_destinations = {}
         
         # Performance statistics
         self.total_abandonments = 0
