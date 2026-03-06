@@ -1,4 +1,4 @@
-from modules import generate_random as gr
+from classes import generate_random as gr
 
 class Simulation:
 
