@@ -1,5 +1,5 @@
 from classes.simulation import Simulation
-from modules import generate_random as gr
+from classes import generate_random as gr
 import math
 
 # To compute Euclidean distance between two locations
