@@ -23,7 +23,11 @@ class Simulation:
         # Lists to store system state
         self.idle_drivers = []
         self.waiting_riders = []
-        
+
+        # ride statistics
+        self.completed_rides = 0
+        self.total_wait_time = 0
+        self.total_trip_time = 0
         # Performance statistics
         self.total_abandonments = 0
 
