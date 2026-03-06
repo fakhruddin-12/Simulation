@@ -1,6 +1,6 @@
 from classes.simulation import Simulation
-from classes.driver import Driver         
-from classes.rider import Rider            
+from classes.Driver import Driver         
+from classes.Rider import Rider            
 import math
 
 # To compute Euclidean distance between two locations
