@@ -7,7 +7,10 @@ class EventHandlers:
         
     def handle_driver_arrival(self, event_data: Any):
         hf.execute_driver_arrival(self.simulation)
-
+    
+    def handle_driver_offline(self, event_data: Any):
+        hf.execute_driver_offline(self.simulation, event_data)
+    
     def handle_rider_arrival(self, event_data: Any):
         hf.execute_rider_arrival(self.simulation)
 
