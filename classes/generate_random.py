@@ -34,13 +34,9 @@ class Distributions:
         y = random.uniform(0, 20)
         return (x, y)
     
-    # Expected travel time basis average speed
-    def expected_travel_time(self, loc1, loc2):
-        # Euclidean distance
-        d = math.sqrt( (loc1[0] - loc2[0])**2 + (loc1[1] - loc2[1])**2)
-        return d / 20
-    
     # Actual trip time distribution
     def travel_time(self, loc1, loc2):
-        mu = self.expected_travel_time(loc1, loc2)
+        # Euclidean distance
+        d = math.sqrt( (loc1[0] - loc2[0])**2 + (loc1[1] - loc2[1])**2)    
+        mu = d / 20    #average speed assumed
         return random.uniform(0.8*mu, 1.2*mu)
