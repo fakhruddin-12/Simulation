@@ -47,17 +47,14 @@ def execute_driver_arrival(sim: Simulation):
 
     # driver available for
     availability = sim.distributions.driver_availability()
-
     offline_time = sim.current_time + availability
 
     # create driver object to store driver state
-    driver = Driver(                               # <<< NEW
-        driver_id,
-        location,
-        sim.current_time,
-        None,
-        None
-    )
+    driver = Driver(   # <<< NEW
+    driver_id,
+    location,
+    sim.current_time,
+    offline_time)
 
     # store driver object
     sim.drivers[driver_id] = driver                # <<< NEW
@@ -66,8 +63,7 @@ def execute_driver_arrival(sim: Simulation):
     sim.add_event(
         offline_time,
         "driver_offline",
-        {"driver": driver_id}
-    )
+        {"driver": driver_id})
 
     # Driver becomes idle initially
     sim.idle_drivers.append(driver_id)
@@ -113,13 +109,13 @@ def execute_rider_arrival(sim: Simulation):
     dropoff_location = sim.distributions.random_location()     # <<< NEW
 
     # create rider object
-    rider = Rider(                                             # <<< NEW
+    patience = sim.distributions.rider_patience()
+    rider = Rider(                     # <<< NEW
         rider_id,
         sim.current_time,
         pickup_location,
         dropoff_location,
-        sim.distributions.patience_rate
-    )
+        patience)
 
     # store rider object
     sim.riders[rider_id] = rider                               # <<< NEW
