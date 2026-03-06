@@ -36,7 +36,7 @@ def execute_driver_arrival(sim: Simulation):
     driver_id = sim.driver_count
 
     # driver available for
-    availability = sim.distributions["driver-availability"]()
+    availability = sim.distributions.driver_availability()
     offline_time = sim.current_time + availability
     #schedule driver offline event
     sim.add_event(offline_time,"driver_offline",{"driver": driver_id})
@@ -50,7 +50,7 @@ def execute_driver_arrival(sim: Simulation):
     sim.idle_drivers.append(driver_id)
 
     # Schedule next driver arrival
-    next_arrival = sim.current_time + sim.distributions["driver-arrival"]()
+    next_arrival = sim.current_time + sim.distributions.driver_arrival()
     sim.add_event(next_arrival, "driver_arrival", None)
 
 # 2.driver goes offline
@@ -107,7 +107,7 @@ def execute_rider_arrival(sim: Simulation):
         sim.waiting_riders.append(rider_id)
 
         # Generate patience time
-        patience_time = sim.current_time + sim.distributions["patience"]()
+        patience_time = sim.current_time + sim.distributions.rider_patience()
 
         # Schedule abandonment event
         sim.add_event(
@@ -117,7 +117,7 @@ def execute_rider_arrival(sim: Simulation):
         )
 
     # Schedule next rider arrival
-    next_arrival = sim.current_time + sim.distributions["rider-arrival"]()
+    next_arrival = sim.current_time + sim.distributions.rider_arrival()
     sim.add_event(next_arrival, "rider_arrival", None)
 
 # 4.rider abandonment
