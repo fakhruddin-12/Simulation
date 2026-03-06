@@ -36,8 +36,10 @@ def execute_driver_arrival(sim: Simulation):
     sim.driver_count += 1
     driver_id = sim.driver_count
 
+    # driver available for
     availability = sim.distributions["driver-availability"]()
     offline_time = sim.current_time + availability
+    #schedule driver offline event
     sim.add_event(offline_time,"driver_offline",{"driver": driver_id})
 
     # generate driver location using module
@@ -57,12 +59,19 @@ def execute_driver_offline(sim: Simulation, event_data):
 
     driver = event_data["driver"]
 
-    sim.driver_offline_flags[driver] = True
-    if sim.driver_offline_flags.get(driver, False):
-    return
-    
+    # Case 1: driver is currently idle
+    # remove from the idle driver list immediately
     if driver in sim.idle_drivers:
         sim.idle_drivers.remove(driver)
+
+        # or remove their location record
+        if driver in sim.driver_locations:
+            del sim.driver_locations[driver]
+
+    else:
+        # Case 2: driver is currently finishing a ride
+        # flag that the driver should leave after finishing the trip
+        sim.driver_offline_flags[driver] = True
 
 # 3.rider arrival
 def execute_rider_arrival(sim: Simulation):
@@ -154,32 +163,35 @@ def execute_dropoff_complete(sim: Simulation, event_data):
     driver = event_data["driver"]
     rider = event_data["rider"]
 
-    # find rider destination
+    # get rider destination
     destination = sim.rider_destinations[rider]
 
-    # driver current location is now riders destination
+    # update driver location to rider destination
     sim.driver_locations[driver] = destination
 
-    # If riders are waiting, serve next rider
+    # check if driver should go offline after trip
+    if sim.driver_offline_flags.get(driver, False):
+
+        # remove driver location record
+        if driver in sim.driver_locations:
+            del sim.driver_locations[driver]
+        return
+    # if riders are waiting, serve next rider
     if len(sim.waiting_riders) > 0:
-
-        # Serve first rider in queue
         next_rider = sim.waiting_riders.pop(0)
-
-        # Calculate pickup travel time
         driver_location = sim.driver_locations[driver]
         rider_location = sim.rider_locations[next_rider]
+
         pickup_time = sim.current_time + gr.travel_time(driver_location, rider_location)
 
-        # Schedule next pickup, driver keeps working
         sim.add_event(
             pickup_time,
             "pickup_complete",
             {"driver": driver, "rider": next_rider}
         )
 
+    # otherwise driver becomes idle
     else:
-        # Otherwise driver becomes idle
         sim.idle_drivers.append(driver)
 
 # 7.terminate simulation and calculate summary statistics
