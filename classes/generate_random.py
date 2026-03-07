@@ -3,22 +3,21 @@ import math
 
 class Distributions:
 
-    def __init__(self, simulation):
+    def __init__( self, simulation, rider_interarrival_rate=30, driver_interarrival_rate=3,patience_rate=5,driver_availability_min=5,driver_availability_max=8):
         self.simulation = simulation
-        # setting model parameters
-        self.rider_arrival_rate = 30
-        self.driver_arrival_rate = 3
-        self.patience_rate = 5
-        self.driver_availability_min = 5
-        self.driver_availability_max = 8
+        self.rider_interarrival_rate = rider_interarrival_rate
+        self.driver_interarrival_rate = driver_interarrival_rate
+        self.patience_rate = patience_rate
+        self.driver_availability_min = driver_availability_min
+        self.driver_availability_max = driver_availability_max
 
     # Rider arrival process
-    def rider_arrival(self):
-        return random.expovariate(self.rider_arrival_rate)
+    def rider_interarrival(self):
+        return random.expovariate(self.rider_interarrival_rate)
 
     # Driver arrival process
-    def driver_arrival(self):
-        return random.expovariate(self.driver_arrival_rate)
+    def driver_interarrival(self):
+        return random.expovariate(self.driver_interarrival_rate)
 
     # Rider patience
     def rider_patience(self):
