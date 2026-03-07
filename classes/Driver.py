@@ -12,7 +12,6 @@ class Driver:
         
         self.offline_time = offline_time   # time driver leaves system, changed by MANSI
         
-        self.available = True
         #self.offline_time = self.entry_time + random.uniform(self.offline_start , self.offline_end)    #old code
 
         # driver availability status
