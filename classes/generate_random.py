@@ -12,11 +12,11 @@ class Distributions:
         self.driver_availability_max = driver_availability_max
 
     # Rider arrival process
-    def rider_interarrival(self):
+    def rider_arrival(self):
         return random.expovariate(self.rider_interarrival_rate)
 
     # Driver arrival process
-    def driver_interarrival(self):
+    def driver_arrival(self):
         return random.expovariate(self.driver_interarrival_rate)
 
     # Rider patience
