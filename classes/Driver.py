@@ -17,3 +17,8 @@ class Driver:
         # driver availability status
         self.available = True
 
+        # performance metrics
+        self.earnings = 0.0
+        self.completed_trips = 0
+        self.total_busy_time = 0.0
+
