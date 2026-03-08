@@ -51,7 +51,7 @@ class Simulation:
         self.add_event(0, "rider_arrival", None)
 
         # simulation end time
-        self.add_event(24, "termination", None)
+        self.add_event(720, "termination", None)
 
         # main simulation loop
         while self.event_list:
