@@ -1,18 +1,20 @@
+import config
+
+
 class Simulation:
-
     def __init__(self, handlers, distributions):
-
         # connect handlers and distributions
         self.handlers = handlers
         self.distributions = distributions
 
-        # Current simulation clock
-        self.current_time = 0
+        # simulation clock
+        self.current_time = 0.0
+        self.simulation_length = config.SIMULATION_LENGTH
 
-        # Event list
+        # event list: (time, event_type, event_data)
         self.event_list = []
 
-        # Counters
+        # counters for ids
         self.driver_count = 0
         self.rider_count = 0
 
@@ -20,67 +22,72 @@ class Simulation:
         self.drivers = {}
         self.riders = {}
 
-        # Lists to store system state
+        # current system state
         self.idle_drivers = []
         self.waiting_riders = []
 
-        # ride statistics
+        # ride statistics / KPIs
+        self.total_drivers_arrived = 0
+        self.total_riders_arrived = 0
         self.completed_rides = 0
-        self.total_wait_time = 0
-        self.total_trip_time = 0
-        # Performance statistics
         self.total_abandonments = 0
 
+        self.total_wait_time = 0.0
+        self.total_trip_time = 0.0
+        self.total_system_time = 0.0
+        self.total_pickup_time = 0.0
+
+        # time-average stats
+        self.area_waiting_riders = 0.0
+        self.area_idle_drivers = 0.0
+        self.last_event_time = 0.0
+
         # Driver availability tracking
-        self.driver_offline_flags = {}
+        # if a driver wants to go offline while busy, mark it here
+        self.driver_offline_flags = set()
 
-    # Add event to event list
-    def add_event(self, time, event_type, event_data):
+        # event dispatch
+        self.event_handlers = {
+            "driver_arrival": self.handlers.handle_driver_arrival,
+            "driver_offline": self.handlers.handle_driver_offline,
+            "rider_arrival": self.handlers.handle_rider_arrival,
+            "rider_abandonment": self.handlers.handle_rider_abandonment,
+            "pickup_complete": self.handlers.handle_pickup_complete,
+            "dropoff_complete": self.handlers.handle_dropoff_complete,
+            "termination": self.handlers.handle_termination,
+        }
 
-        # add event tuple
+    def add_event(self, time, event_type, event_data=None):
         self.event_list.append((time, event_type, event_data))
-
-        # keep events sorted by time
         self.event_list.sort(key=lambda x: x[0])
 
-    # Simulation run loop
-    def run(self):
+    def update_time_average_stats(self, new_time):
+        dt = new_time - self.last_event_time
+        self.area_waiting_riders += len(self.waiting_riders) * dt
+        self.area_idle_drivers += len(self.idle_drivers) * dt
+        self.last_event_time = new_time
 
-        # schedule initial events
+    def progress_time(self):
+        if not self.event_list:
+            return False
+
+        time, event_type, event_data = self.event_list.pop(0)
+
+        self.update_time_average_stats(time)
+        self.current_time = time
+
+        self.event_handlers[event_type](event_data)
+
+        if event_type == "termination":
+            return False
+
+        return True
+
+    def run(self):
+        # initial events
         self.add_event(0, "driver_arrival", None)
         self.add_event(0, "rider_arrival", None)
+        self.add_event(self.simulation_length, "termination", None)
 
-        # simulation end time
-        self.add_event(720, "termination", None)
-
-        # main simulation loop
-        while self.event_list:
-
-            # get next event
-            time, event_type, event_data = self.event_list.pop(0)
-
-            # advance simulation clock
-            self.current_time = time
-
-            # call corresponding handler
-            if event_type == "driver_arrival":
-                self.handlers.handle_driver_arrival(event_data)
-
-            elif event_type == "driver_offline":
-                self.handlers.handle_driver_offline(event_data)
-
-            elif event_type == "rider_arrival":
-                self.handlers.handle_rider_arrival(event_data)
-
-            elif event_type == "rider_abandonment":
-                self.handlers.handle_rider_abandonment(event_data)
-
-            elif event_type == "pickup_complete":
-                self.handlers.handle_pickup_complete(event_data)
-
-            elif event_type == "dropoff_complete":
-                self.handlers.handle_dropoff_complete(event_data)
-
-            elif event_type == "termination":
-                self.handlers.handle_termination(event_data)
-                break
+        while self.progress_time():
+            pass
