@@ -1,7 +1,7 @@
 import random
 import math
 
-import config
+from classes import config
 from classes.simulation import Simulation
 from classes.generate_random import Distributions
 from classes.event_handlers import EventHandlers
@@ -115,4 +115,5 @@ if __name__ == "__main__":
         comparison = compare_with_actual(summary, actual_kpis)
         print("\n=== Comparison with actual ===")
         for kpi, vals in comparison.items():
+
             print(kpi, vals)
