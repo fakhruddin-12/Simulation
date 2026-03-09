@@ -29,10 +29,11 @@ DISTANCE_FARE = 1.5
 TIME_FARE = 0.2
 
 # Fairness handling
-MIN_ONLINE_TIME_FOR_FAIRNESS = 1e-9
+MIN_ONLINE_TIME_FOR_FAIRNESS = 1
 
 # Confidence interval
 CI_Z_VALUE = 1.96
+
 
 
 
