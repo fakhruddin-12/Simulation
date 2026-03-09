@@ -1,4 +1,4 @@
-import config
+from classes import config
 from modules.metrics import get_kpis
 
 
