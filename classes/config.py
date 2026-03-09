@@ -3,7 +3,7 @@
 # DISTANCE UNITS: arbitrary map units
 # =========================
 
-SIMULATION_LENGTH = 12   # 12 hours
+SIMULATION_LENGTH = 720   # 12 hours
 
 # Mean interarrival / patience values
 MEAN_RIDER_INTERARRIVAL = 34.60
@@ -33,6 +33,7 @@ MIN_ONLINE_TIME_FOR_FAIRNESS = 1
 
 # Confidence interval
 CI_Z_VALUE = 1.96
+
 
 
 
