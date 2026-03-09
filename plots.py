@@ -223,7 +223,7 @@ def generate_all_plots():
     plot_driver_utilization(sim)
     plot_earning_vs_utilization(sim)
 
-    results = run_multiple_simulations(100)
+    results = run_multiple_simulations(50)
 
     summary = summarize(results)
 
@@ -235,3 +235,4 @@ def generate_all_plots():
 if __name__ == "__main__":
 
     generate_all_plots()
+
