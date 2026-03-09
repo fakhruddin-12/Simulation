@@ -3,7 +3,7 @@ import random
 import math
 import matplotlib.pyplot as plt
 
-import config
+from classes import config
 from classes.simulation import Simulation
 from classes.generate_random import Distributions
 from classes.event_handlers import EventHandlers
@@ -293,5 +293,6 @@ if __name__ == "__main__":
 
     if not actual_kpis:
         actual_kpis = None
+
 
     generate_all_plots(n_runs=100, actual_kpis=actual_kpis)
