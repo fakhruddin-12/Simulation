@@ -102,8 +102,26 @@ def print_summary(summary):
 
 
 # ------------------------------
-# DRIVER FAIRNESS PLOTS
+# DRIVER FAIRNESS / DRIVER-SIDE PLOTS
 # ------------------------------
+
+def plot_driver_earning_boxplot(sim):
+    ensure_output_dir()
+
+    earnings = []
+
+    for d in sim.exited_drivers:
+        if d.online_time is not None and d.online_time >= config.MIN_ONLINE_TIME_FOR_FAIRNESS:
+            earnings.append(d.total_earnings)
+
+    plt.figure(figsize=(7, 5))
+    plt.boxplot(earnings)
+    plt.title("Box Plot of Driver Earnings")
+    plt.ylabel("Total earnings")
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_DIR, "driver_earnings_boxplot.png"), dpi=300)
+    plt.close()
+
 
 def plot_driver_earning_rate(sim):
     ensure_output_dir()
@@ -157,45 +175,36 @@ def plot_earning_vs_utilization(sim):
 
 
 # ------------------------------
-# KPI SUMMARY PLOT
+# RUN-LEVEL KPI DISTRIBUTION PLOTS
 # ------------------------------
 
-def plot_mean_kpis(summary):
+def plot_waiting_time_histogram(results):
     ensure_output_dir()
 
-    kpis = [
-        "avg_wait_time",
-        "avg_trip_time",
-        "abandonment_rate",
-        "avg_driver_earning_rate"
-    ]
+    wait_times = [r["avg_wait_time"] for r in results if "avg_wait_time" in r]
 
-    labels = []
-    means = []
-    lower = []
-    upper = []
-
-    for k in kpis:
-        if k in summary:
-            labels.append(k)
-            means.append(summary[k]["mean"])
-            lower.append(summary[k]["mean"] - summary[k]["ci_low"])
-            upper.append(summary[k]["ci_high"] - summary[k]["mean"])
-
-    plt.figure(figsize=(9, 6))
-    plt.bar(labels, means)
-    plt.errorbar(
-        labels,
-        means,
-        yerr=[lower, upper],
-        fmt="none",
-        capsize=5
-    )
-    plt.title("Mean KPIs Across Simulation Runs")
-    plt.ylabel("Value")
-    plt.xticks(rotation=30)
+    plt.figure(figsize=(8, 5))
+    plt.hist(wait_times, bins=20, edgecolor="black")
+    plt.title("Histogram of Average Waiting Time Across Runs")
+    plt.xlabel("Average waiting time")
+    plt.ylabel("Number of runs")
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, "kpi_means.png"), dpi=300)
+    plt.savefig(os.path.join(OUTPUT_DIR, "waiting_time_hist.png"), dpi=300)
+    plt.close()
+
+
+def plot_abandonment_rate_histogram(results):
+    ensure_output_dir()
+
+    abandonment_rates = [r["abandonment_rate"] for r in results if "abandonment_rate" in r]
+
+    plt.figure(figsize=(8, 5))
+    plt.hist(abandonment_rates, bins=20, edgecolor="black")
+    plt.title("Histogram of Abandonment Rate Across Runs")
+    plt.xlabel("Abandonment rate")
+    plt.ylabel("Number of runs")
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_DIR, "abandonment_rate_hist.png"), dpi=300)
     plt.close()
 
 
@@ -210,16 +219,19 @@ def generate_report_outputs(n_runs=100):
     # One representative run for driver-level plots
     sim, _ = run_one_simulation(seed=0)
 
+    plot_driver_earning_boxplot(sim)
     plot_driver_earning_rate(sim)
     plot_driver_utilization(sim)
     plot_earning_vs_utilization(sim)
 
-    # Multiple runs for analysis + KPI summary plot
+    # Multiple runs for analysis summary + KPI histograms
     results = run_multiple_simulations(n_runs=n_runs)
     summary = summarize(results)
 
     print_summary(summary)
-    plot_mean_kpis(summary)
+
+    plot_waiting_time_histogram(results)
+    plot_abandonment_rate_histogram(results)
 
     print(f"Plots saved in '{OUTPUT_DIR}/' folder")
 
