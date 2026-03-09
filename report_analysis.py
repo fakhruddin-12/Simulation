@@ -212,7 +212,7 @@ def plot_abandonment_rate_histogram(results):
 # MAIN PIPELINE
 # ------------------------------
 
-def generate_report_outputs(n_runs=100):
+def generate_report_outputs(n_runs=50):
     print("Current working directory:", os.getcwd())
     print("Plots will be saved in:", os.path.abspath(OUTPUT_DIR))
 
@@ -238,3 +238,4 @@ def generate_report_outputs(n_runs=100):
 
 if __name__ == "__main__":
     generate_report_outputs(n_runs=50)
+
