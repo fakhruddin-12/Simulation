@@ -1,50 +1,52 @@
 import config
+from modules.metrics import get_kpis
 
 
 class Simulation:
     def __init__(self, handlers, distributions):
-        # connect handlers and distributions
         self.handlers = handlers
         self.distributions = distributions
 
-        # simulation clock
         self.current_time = 0.0
         self.simulation_length = config.SIMULATION_LENGTH
 
         # event list: (time, event_type, event_data)
         self.event_list = []
 
-        # counters for ids
+        # ids
         self.driver_count = 0
         self.rider_count = 0
 
-        # store driver and rider objects
+        # active entities
         self.drivers = {}
         self.riders = {}
 
-        # current system state
+        # exited drivers kept here for fairness / KPI analysis
+        self.exited_drivers = []
+
+        # state
         self.idle_drivers = []
         self.waiting_riders = []
 
-        # ride statistics / KPIs
+        # if a driver wants to go offline while busy
+        self.driver_offline_flags = set()
+
+        # system KPIs
         self.total_drivers_arrived = 0
         self.total_riders_arrived = 0
         self.completed_rides = 0
         self.total_abandonments = 0
 
+        self.total_match_delay = 0.0
+        self.total_pickup_delay = 0.0
         self.total_wait_time = 0.0
         self.total_trip_time = 0.0
         self.total_system_time = 0.0
-        self.total_pickup_time = 0.0
 
         # time-average stats
         self.area_waiting_riders = 0.0
         self.area_idle_drivers = 0.0
         self.last_event_time = 0.0
-
-        # Driver availability tracking
-        # if a driver wants to go offline while busy, mark it here
-        self.driver_offline_flags = set()
 
         # event dispatch
         self.event_handlers = {
@@ -84,10 +86,12 @@ class Simulation:
         return True
 
     def run(self):
-        # initial events
-        self.add_event(0, "driver_arrival", None)
-        self.add_event(0, "rider_arrival", None)
+        self.add_event(0.0, "driver_arrival", None)
+        self.add_event(0.0, "rider_arrival", None)
         self.add_event(self.simulation_length, "termination", None)
 
         while self.progress_time():
             pass
+
+    def get_results(self):
+        return get_kpis(self)
