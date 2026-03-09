@@ -49,13 +49,13 @@ class Distributions:
         self.simulation = simulation
 
     def rider_interarrival(self):
-        return random.expovariate(1.0 / config.MEAN_RIDER_INTERARRIVAL)
+        return random.expovariate(config.MEAN_RIDER_INTERARRIVAL)
 
     def driver_interarrival(self):
-        return random.expovariate(1.0 / config.MEAN_DRIVER_INTERARRIVAL)
+        return random.expovariate(config.MEAN_DRIVER_INTERARRIVAL)
 
     def rider_patience(self):
-        return random.expovariate(1.0 / config.MEAN_RIDER_PATIENCE)
+        return random.expovariate(config.MEAN_RIDER_PATIENCE)
 
     def driver_availability(self):
         return random.uniform(
