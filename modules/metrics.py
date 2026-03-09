@@ -1,5 +1,5 @@
 import math
-import config
+from classes import config
 
 
 def record_abandonment(sim):
@@ -164,4 +164,5 @@ def print_summary(sim):
     kpis = get_kpis(sim)
     print("Simulation finished")
     for key, value in kpis.items():
+
         print(f"{key}: {value}")
