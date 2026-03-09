@@ -1,7 +1,3 @@
-import random
-import math
-import config
-
 #class Distributions:
 
     #def __init__( self, simulation, rider_interarrival_rate=30, driver_interarrival_rate=3,patience_rate=5,driver_availability_min=5,driver_availability_max=8):
@@ -45,21 +41,21 @@ import config
 # ===== NEW CODE =====
 import random
 import math
+import config
 
 
 class Distributions:
-
     def __init__(self, simulation):
         self.simulation = simulation
 
     def rider_interarrival(self):
-        return random.expovariate(config.RIDER_INTERARRIVAL_RATE)
+        return random.expovariate(1.0 / config.MEAN_RIDER_INTERARRIVAL)
 
     def driver_interarrival(self):
-        return random.expovariate(config.DRIVER_INTERARRIVAL_RATE)
+        return random.expovariate(1.0 / config.MEAN_DRIVER_INTERARRIVAL)
 
     def rider_patience(self):
-        return random.expovariate(config.RIDER_PATIENCE_RATE)
+        return random.expovariate(1.0 / config.MEAN_RIDER_PATIENCE)
 
     def driver_availability(self):
         return random.uniform(
@@ -72,12 +68,16 @@ class Distributions:
         y = random.uniform(config.MAP_Y_MIN, config.MAP_Y_MAX)
         return (x, y)
 
-    def travel_time(self, loc1, loc2):
-
-        d = math.sqrt(
-            (loc1[0] - loc2[0])**2 +
-            (loc1[1] - loc2[1])**2
+    def distance(self, loc1, loc2):
+        return math.sqrt(
+            (loc1[0] - loc2[0]) ** 2 +
+            (loc1[1] - loc2[1]) ** 2
         )
+
+    def travel_time(self, loc1, loc2):
+        d = self.distance(loc1, loc2)
+        mean_time = d / config.AVERAGE_SPEED
+        return random.uniform(0.8 * mean_time, 1.2 * mean_time)
 
         mu = d / config.AVERAGE_SPEED
 
