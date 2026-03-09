@@ -21,7 +21,7 @@ MAP_Y_MIN = 0.0
 MAP_Y_MAX = 20.0
 
 # Travel speed: distance units per minute
-AVERAGE_SPEED = 0.33
+AVERAGE_SPEED = 20
 
 # Fare model
 BASE_FARE = 2.0
@@ -33,4 +33,5 @@ MIN_ONLINE_TIME_FOR_FAIRNESS = 1.0
 
 # Confidence interval
 CI_Z_VALUE = 1.96
+
 
