@@ -1,5 +1,6 @@
 import random
 import math
+import config
 
 #class Distributions:
 
@@ -42,55 +43,42 @@ import math
 
 
 # ===== NEW CODE =====
+import random
+import math
 
 
 class Distributions:
 
-    def __init__(self, simulation,
-                 rider_interarrival_rate=30,
-                 driver_interarrival_rate=3,
-                 patience_rate=5,
-                 driver_availability_min=5,
-                 driver_availability_max=8):
-
+    def __init__(self, simulation):
         self.simulation = simulation
-        self.rider_interarrival_rate = rider_interarrival_rate
-        self.driver_interarrival_rate = driver_interarrival_rate
-        self.patience_rate = patience_rate
-        self.driver_availability_min = driver_availability_min
-        self.driver_availability_max = driver_availability_max
 
-    # Rider arrival process
     def rider_interarrival(self):
-        return random.expovariate(self.rider_interarrival_rate)
+        return random.expovariate(config.RIDER_INTERARRIVAL_RATE)
 
-    # Driver arrival process
     def driver_interarrival(self):
-        return random.expovariate(self.driver_interarrival_rate)
+        return random.expovariate(config.DRIVER_INTERARRIVAL_RATE)
 
-    # Rider patience
     def rider_patience(self):
-        return random.expovariate(self.patience_rate)
+        return random.expovariate(config.RIDER_PATIENCE_RATE)
 
-    # Driver availability duration
     def driver_availability(self):
-        return random.uniform(self.driver_availability_min,
-                              self.driver_availability_max)
+        return random.uniform(
+            config.DRIVER_AVAILABILITY_MIN,
+            config.DRIVER_AVAILABILITY_MAX
+        )
 
-    # Generate random location
     def random_location(self):
-        x = random.uniform(0, 20)
-        y = random.uniform(0, 20)
+        x = random.uniform(config.MAP_X_MIN, config.MAP_X_MAX)
+        y = random.uniform(config.MAP_Y_MIN, config.MAP_Y_MAX)
         return (x, y)
 
-    # Travel time
     def travel_time(self, loc1, loc2):
 
         d = math.sqrt(
-            (loc1[0] - loc2[0]) ** 2 +
-            (loc1[1] - loc2[1]) ** 2
+            (loc1[0] - loc2[0])**2 +
+            (loc1[1] - loc2[1])**2
         )
 
-        mu = d / 20
+        mu = d / config.AVERAGE_SPEED
 
         return random.uniform(0.8 * mu, 1.2 * mu)
