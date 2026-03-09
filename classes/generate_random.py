@@ -41,7 +41,7 @@
 # ===== NEW CODE =====
 import random
 import math
-import config
+from classes import config
 
 
 class Distributions:
