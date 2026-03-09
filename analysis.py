@@ -97,13 +97,7 @@ def compare_with_actual(summary, actual_kpis):
 
 
 if __name__ == "__main__":
-    actual_kpis = {
-        # Fill these using your data
-        # "avg_wait_time": 8.2,
-        # "abandonment_rate": 0.12,
-        # "avg_driver_earning_rate": 4.5,
-    }
-
+    
     results = run_multiple_simulations(n_runs=100)
     summary = summarize_results(results)
 
@@ -111,9 +105,4 @@ if __name__ == "__main__":
     for kpi, vals in summary.items():
         print(kpi, vals)
 
-    if actual_kpis:
-        comparison = compare_with_actual(summary, actual_kpis)
-        print("\n=== Comparison with actual ===")
-        for kpi, vals in comparison.items():
-
-            print(kpi, vals)
+    
