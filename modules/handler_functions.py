@@ -281,8 +281,8 @@ def execute_driver_arrival(sim):
 
     # If riders are already waiting, serve the oldest waiting rider immediately.
     if sim.waiting_riders:
-        rider_id = sim.waiting_riders[0]
-        assign_driver_to_rider(sim, driver_id, rider_id)
+    rider_id = find_closest_rider(sim, driver_id)
+    assign_driver_to_rider(sim, driver_id, rider_id)
     else:
         sim.idle_drivers.append(driver_id)
 
@@ -400,8 +400,8 @@ def execute_dropoff_complete(sim, event_data):
 
     # Otherwise serve next waiting rider if present.
     if sim.waiting_riders:
-        next_rider_id = sim.waiting_riders[0]
-        assign_driver_to_rider(sim, driver_id, next_rider_id)
+    next_rider_id = find_closest_rider(sim, driver_id)
+    assign_driver_to_rider(sim, driver_id, next_rider_id)
     else:
         driver.status = "idle"
         driver.assigned_rider = None
