@@ -354,6 +354,22 @@ def execute_pickup_complete(sim, event_data):
         }
     )
 
+def find_closest_rider(sim, driver_id):
+    driver_location = sim.drivers[driver_id].location
+
+    closest_rider = None
+    min_distance = float("inf")
+
+    for rider_id in sim.waiting_riders:
+        rider_location = sim.riders[rider_id].pickup_location
+        d = sim.distributions.distance(driver_location, rider_location)
+
+        if d < min_distance:
+            min_distance = d
+            closest_rider = rider_id
+
+    return closest_rider
+
 
 def execute_dropoff_complete(sim, event_data):
     driver_id = event_data["driver"]
