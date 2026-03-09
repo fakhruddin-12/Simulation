@@ -209,24 +209,20 @@ import math
 
 # ===== NEW CODE =====
 
-def distance(loc1, loc2):
-    return math.sqrt(
-        (loc1[0] - loc2[0]) ** 2 +
-        (loc1[1] - loc2[1]) ** 2
-    )
+from classes.Driver import Driver
+from classes.Rider import Rider
+from modules import metrics
 
 
 def find_closest_driver(sim, rider_id):
-
     rider_location = sim.riders[rider_id].pickup_location
 
     closest_driver = None
     min_distance = float("inf")
 
     for driver_id in sim.idle_drivers:
-
         driver_location = sim.drivers[driver_id].location
-        d = distance(rider_location, driver_location)
+        d = sim.distributions.distance(rider_location, driver_location)
 
         if d < min_distance:
             min_distance = d
@@ -235,203 +231,193 @@ def find_closest_driver(sim, rider_id):
     return closest_driver
 
 
-def execute_driver_arrival(sim):
+def assign_driver_to_rider(sim, driver_id, rider_id):
+    """
+    Main matching logic:
+    - remove driver from idle pool
+    - remove rider from waiting queue if present
+    - set rider/driver states
+    - schedule pickup completion
+    """
+    driver = sim.drivers[driver_id]
+    rider = sim.riders[rider_id]
 
+    if driver_id in sim.idle_drivers:
+        sim.idle_drivers.remove(driver_id)
+
+    if rider_id in sim.waiting_riders:
+        sim.waiting_riders.remove(rider_id)
+
+    driver.status = "pickup"
+    driver.assigned_rider = rider_id
+
+    rider.status = "matched"
+    rider.driver_id = driver_id
+    rider.match_time = sim.current_time
+
+    pickup_travel_time = sim.distributions.travel_time(driver.location, rider.pickup_location)
+
+    sim.add_event(
+        sim.current_time + pickup_travel_time,
+        "pickup_complete",
+        {
+            "driver": driver_id,
+            "rider": rider_id,
+            "pickup_travel_time": pickup_travel_time,
+        }
+    )
+
+
+def execute_driver_arrival(sim):
     sim.driver_count += 1
     driver_id = sim.driver_count
     sim.total_drivers_arrived += 1
 
     location = sim.distributions.random_location()
-
     availability = sim.distributions.driver_availability()
     offline_time = sim.current_time + availability
 
     driver = Driver(driver_id, location, sim.current_time, offline_time)
-
     sim.drivers[driver_id] = driver
 
     sim.add_event(offline_time, "driver_offline", {"driver": driver_id})
 
-    # If riders are waiting, serve immediately
+    # If riders are already waiting, serve the oldest waiting rider immediately.
     if sim.waiting_riders:
-
-        rider_id = sim.waiting_riders.pop(0)
-
-        driver.status = "pickup"
-        driver.assigned_rider = rider_id
-
-        rider = sim.riders[rider_id]
-        rider.match_time = sim.current_time
-
-        pickup_time = sim.current_time + sim.distributions.travel_time(
-            driver.location,
-            rider.pickup_location
-        )
-
-        sim.add_event(
-            pickup_time,
-            "pickup_complete",
-            {"driver": driver_id, "rider": rider_id}
-        )
-
+        rider_id = sim.waiting_riders[0]
+        assign_driver_to_rider(sim, driver_id, rider_id)
     else:
         sim.idle_drivers.append(driver_id)
 
     next_arrival = sim.current_time + sim.distributions.driver_interarrival()
-
-    sim.add_event(next_arrival, "driver_arrival", None)
+    if next_arrival < sim.simulation_length:
+        sim.add_event(next_arrival, "driver_arrival", None)
 
 
 def execute_rider_arrival(sim):
-
     sim.rider_count += 1
     rider_id = sim.rider_count
     sim.total_riders_arrived += 1
 
     pickup = sim.distributions.random_location()
     dropoff = sim.distributions.random_location()
-
     patience = sim.distributions.rider_patience()
 
     rider = Rider(rider_id, sim.current_time, pickup, dropoff, patience)
-
     sim.riders[rider_id] = rider
 
+    # If idle drivers exist, use closest-driver matching.
     if sim.idle_drivers:
-
         driver_id = find_closest_driver(sim, rider_id)
-
-        sim.idle_drivers.remove(driver_id)
-
-        driver = sim.drivers[driver_id]
-        driver.status = "pickup"
-        driver.assigned_rider = rider_id
-
-        rider.match_time = sim.current_time
-
-        pickup_time = sim.current_time + sim.distributions.travel_time(
-            driver.location,
-            rider.pickup_location
-        )
-
-        sim.add_event(
-            pickup_time,
-            "pickup_complete",
-            {"driver": driver_id, "rider": rider_id}
-        )
-
+        assign_driver_to_rider(sim, driver_id, rider_id)
     else:
-
         sim.waiting_riders.append(rider_id)
-
-        sim.add_event(
-            rider.deadline,
-            "rider_abandonment",
-            {"rider": rider_id}
-        )
+        sim.add_event(rider.deadline, "rider_abandonment", {"rider": rider_id})
 
     next_arrival = sim.current_time + sim.distributions.rider_interarrival()
-
-    sim.add_event(next_arrival, "rider_arrival", None)
+    if next_arrival < sim.simulation_length:
+        sim.add_event(next_arrival, "rider_arrival", None)
 
 
 def execute_rider_abandonment(sim, event_data):
-
     rider_id = event_data["rider"]
 
     if rider_id in sim.waiting_riders:
-
         sim.waiting_riders.remove(rider_id)
-
         rider = sim.riders[rider_id]
         rider.status = "abandoned"
-
-        sim.total_abandonments += 1
+        metrics.record_abandonment(sim)
 
 
 def execute_pickup_complete(sim, event_data):
-
     driver_id = event_data["driver"]
     rider_id = event_data["rider"]
 
-    driver = sim.drivers[driver_id]
-    rider = sim.riders[rider_id]
+    driver = sim.drivers.get(driver_id)
+    rider = sim.riders.get(rider_id)
+
+    if driver is None or rider is None:
+        return
 
     rider.pickup_time = sim.current_time
     rider.status = "in_trip"
 
+    driver.location = rider.pickup_location
     driver.status = "trip"
 
-    trip_time = sim.distributions.travel_time(
-        rider.pickup_location,
-        rider.dropoff_location
-    )
+    trip_time = sim.distributions.travel_time(rider.pickup_location, rider.dropoff_location)
 
     sim.add_event(
         sim.current_time + trip_time,
         "dropoff_complete",
-        {"driver": driver_id, "rider": rider_id}
+        {
+            "driver": driver_id,
+            "rider": rider_id,
+            "pickup_travel_time": event_data["pickup_travel_time"],
+        }
     )
 
 
 def execute_dropoff_complete(sim, event_data):
-
     driver_id = event_data["driver"]
     rider_id = event_data["rider"]
+    pickup_travel_time = event_data["pickup_travel_time"]
 
-    driver = sim.drivers[driver_id]
-    rider = sim.riders[rider_id]
+    driver = sim.drivers.get(driver_id)
+    rider = sim.riders.get(rider_id)
+
+    if driver is None or rider is None:
+        return
 
     rider.dropoff_time = sim.current_time
     rider.status = "completed"
 
-    rider.wait_time = rider.pickup_time - rider.request_time
-    rider.trip_time = rider.dropoff_time - rider.pickup_time
-    rider.system_time = rider.dropoff_time - rider.request_time
-
-    sim.total_wait_time += rider.wait_time
-    sim.total_trip_time += rider.trip_time
-    sim.total_system_time += rider.system_time
-
-    sim.completed_rides += 1
-
-    driver.completed_trips += 1
-
     driver.location = rider.dropoff_location
 
+    metrics.record_completed_ride(sim, rider, driver, pickup_travel_time)
+
+    # If driver had already requested offline, remove now.
     if driver_id in sim.driver_offline_flags:
+        sim.driver_offline_flags.remove(driver_id)
+        driver.status = "offline"
+        metrics.finalize_driver_exit(driver, sim.current_time)
+        sim.exited_drivers.append(driver)
         del sim.drivers[driver_id]
         return
 
+    # Otherwise serve next waiting rider if present.
     if sim.waiting_riders:
-
-        next_rider = sim.waiting_riders.pop(0)
-
-        pickup_time = sim.current_time + sim.distributions.travel_time(
-            driver.location,
-            sim.riders[next_rider].pickup_location
-        )
-
-        sim.add_event(
-            pickup_time,
-            "pickup_complete",
-            {"driver": driver_id, "rider": next_rider}
-        )
-
+        next_rider_id = sim.waiting_riders[0]
+        assign_driver_to_rider(sim, driver_id, next_rider_id)
     else:
         driver.status = "idle"
+        driver.assigned_rider = None
         sim.idle_drivers.append(driver_id)
 
 
+def execute_driver_offline(sim, event_data):
+    driver_id = event_data["driver"]
+    driver = sim.drivers.get(driver_id)
+
+    if driver is None:
+        return
+
+    # If idle, leave immediately.
+    if driver.status == "idle":
+        if driver_id in sim.idle_drivers:
+            sim.idle_drivers.remove(driver_id)
+
+        driver.status = "offline"
+        metrics.finalize_driver_exit(driver, sim.current_time)
+        sim.exited_drivers.append(driver)
+        del sim.drivers[driver_id]
+
+    # If busy, leave after current trip finishes.
+    else:
+        sim.driver_offline_flags.add(driver_id)
+
+
 def execute_termination(sim):
-
-    served = sim.completed_rides
-
-    print("Simulation finished")
-    print("Riders served:", served)
-    print("Rider abandonments:", sim.total_abandonments)
-
-    if served > 0:
-        print("Average wait time:", sim.total_wait_time / served)
-        print("Average trip time:", sim.total_trip_time / served)
-        print("Average system time:", sim.total_system_time / served)
+    # Finalize any drivers still active at the end of horizon.
+    metrics.finalize_all_active_drivers(sim)
+    metrics.print_summary(sim)
