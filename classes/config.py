@@ -8,7 +8,7 @@ SIMULATION_LENGTH = 960   # 12 hours
 # Mean interarrival / patience values
 MEAN_RIDER_INTERARRIVAL = 34.60
 MEAN_DRIVER_INTERARRIVAL = 4.74
-MEAN_RIDER_PATIENCE = 5.0
+MEAN_RIDER_PATIENCE = 2.0
 
 # Driver online duration
 DRIVER_AVAILABILITY_MIN = 6
@@ -33,6 +33,7 @@ MIN_ONLINE_TIME_FOR_FAIRNESS = 1
 
 # Confidence interval
 CI_Z_VALUE = 1.96
+
 
 
 
