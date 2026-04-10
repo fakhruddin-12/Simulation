@@ -44,3 +44,4 @@ model_1 <- brm(
 
 summary(model_1)
 exp(-1.20)
+#--print
