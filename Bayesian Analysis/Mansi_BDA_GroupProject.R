@@ -44,17 +44,17 @@ df_clean <- df_clean %>%
     # Binary outcome: arrest indicator
     arrested = ifelse(SUSPECT_ARRESTED_FLAG == "Y", 1,
                       ifelse(SUSPECT_ARRESTED_FLAG == "N", 0, NA)),
-    
+
     # Convert and encode covariates
     age = suppressWarnings(as.numeric(SUSPECT_REPORTED_AGE)),
     sex = factor(SUSPECT_SEX),
     race = factor(SUSPECT_RACE_DESCRIPTION),
     precinct = factor(STOP_LOCATION_PRECINCT),
     weapon = factor(WEAPON_FOUND_FLAG),
-    
+
     # Extract hour from time string (HH format)
     hour = suppressWarnings(as.integer(substr(as.character(STOP_FRISK_TIME), 1, 2))),
-    
+
     # Create time-of-day categorical variable
     time_bucket = case_when(
       hour >= 16 & hour <= 21 ~ "16_21",
@@ -62,7 +62,7 @@ df_clean <- df_clean %>%
       hour >= 3  & hour <= 15 ~ "remaining",
       TRUE ~ NA_character_
     ),
-    
+
     # Set reference category for time
     time_bucket = factor(time_bucket,
                          levels = c("remaining", "16_21", "22_02"))
@@ -119,22 +119,22 @@ write_xlsx(df_clean, "processed_sqf2025.xlsx")
 priors_fixed <- c(
   # Intercept prior
   prior(normal(0.284, 0.321), class = Intercept),
-  
+
   # Age effects
   prior(normal(-0.349, 0.254), class = b, coef = age_band18M24),
   prior(normal(-0.125, 0.258), class = b, coef = age_band25M34),
   prior(normal(0.303, 0.272), class = b, coef = age_band35M44),
   prior(normal(0.364, 0.283), class = b, coef = age_band45P),
-  
+
   # Race effects
   prior(normal(0.048, 0.270), class = b, coef = race2BLACKHISPANIC),
   prior(normal(-0.119, 0.375), class = b, coef = race2OTHER),
   prior(normal(0.029, 0.299), class = b, coef = race2WHITE),
   prior(normal(0.039, 0.221), class = b, coef = race2WHITEHISPANIC),
-  
+
   # Sex effect
   prior(normal(-0.425, 0.297), class = b, coef = sexMALE),
-  
+
   # Time-of-day effects
   prior(normal(-0.377, 0.213), class = b, coef = time_bucket16_21),
   prior(normal(-0.485, 0.227), class = b, coef = time_bucket22_02)
@@ -234,14 +234,14 @@ loo_compare(loo1, loo2, loo3)
 # Compute DIC for model comparison
 compute_DIC <- function(model){
   log_lik_mat <- log_lik(model)  # S x N matrix: rows=samples, cols=observations
-  
+
   mean_deviance <- -2 * mean(rowSums(log_lik_mat))  # E[-2 * log p(y|theta)]
   post_mean <- colMeans(log_lik_mat)                # posterior mean log-lik per obs
   dev_hat <- -2 * sum(post_mean)                    # deviance at posterior mean
-  
+
   p_d <- mean_deviance - dev_hat                    # effective number of parameters
   DIC <- mean_deviance + p_d                        # DIC = mean deviance + p_d
-  
+
   return(list(DIC = DIC))
 }
 dic_compare <- data.frame(
